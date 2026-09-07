@@ -21,8 +21,11 @@ test -f Challenge.lean
 test -f Solution.lean
 test -f comparator.json
 test -f formalization.yaml
-grep -q 'theorem EhlichWojtas.ehlich_wojtas_bound' Challenge.lean
-grep -q 'theorem EhlichWojtas.ehlich_wojtas_bound' Solution.lean
+test -f NOVELTY.md
+test -f LICENSE
+test -f README.md
+grep -q 'theorem ehlich_wojtas_bound' Challenge.lean
+grep -q 'theorem ehlich_wojtas_bound' Solution.lean
 python3 - <<'PY'
 import json
 from pathlib import Path

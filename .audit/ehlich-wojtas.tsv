@@ -4,3 +4,6 @@ ts	phase	decision	why	evidence	result
 2026-09-07T16:49:01Z	frame	skipped architect arena	proof shape is already the published argument so a second design bakeoff is extra machinery	principle-laziness-protocol	skipped
 2026-09-07T16:49:01Z	novelty	GitHub code search found no Ehlich or Wojtas Lean formalization	blocked-novelty gate requires a search before proving	GitHub search_code Ehlich Wojtas language:Lean total_count 0	novel
 2026-09-07T16:49:01Z	novelty	web and X-site search found no public Lean or Palomar entry	X MCP needs auth so public web search is the X evidence we have	web search site:x.com Ehlich Wojtas Lean no hits	novel
+2026-09-07T17:44:03Z	prove	assembled ehlich_wojtas_bound_main	two-class Fischer plus Wojtas with Nat factor comparison	EhlichWojtas/Bound.lean lake build green	proved
+2026-09-07T17:44:03Z	meta	wrote formalization.yaml NOVELTY.md README	Palomar v0.4 plus honesty about classical result	formalization.yaml NOVELTY.md README.md	written
+2026-09-07T17:44:43Z	verify	lake build and verify.sh both green	done predicate is mechanical	scripts/verify.sh exit 0	verified

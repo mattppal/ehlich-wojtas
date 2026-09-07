@@ -1,0 +1,141 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+
+project:
+  name: "The Ehlich–Wojtas determinant bound"
+  description: >-
+    A Lean 4 formalization of the Ehlich–Wojtas upper bound on the
+    determinant of an n×n matrix with entries in {±1} when n ≡ 2 (mod 4):
+    |det M| ≤ (2n−2)(n−2)^{n/2−1}. The argument follows Wojtas’s
+    determinant-theoretic proof as presented in Browne, Egan, Hegarty and
+    Ó Catháin, Electron. J. Combin. 28 (4) (2021), Theorem 19: the Gram
+    matrix of M is positive definite, its off-diagonal entries are even,
+    and a 4-cycle congruence partitions the index set into two classes on
+    which Fischer’s inequality and Wojtas’s off-diagonal magnitude bound
+    apply. On ℕ one has 0^0 = 1, so the n = 2 case is the classical bound
+    |det M| ≤ 2.
+  authors:
+    - "Matt Palmer"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "Matt Palmer"
+
+classification:
+  arxiv: ["math.CO"]
+  msc2020: ["05B20", "15B34", "15A15"]
+
+sources:
+  - title: "A Survey of the Hadamard Maximal Determinant Problem"
+    authors:
+      - "Patrick Browne"
+      - "Ronan Egan"
+      - "Fintan Hegarty"
+      - "Padraig Ó Catháin"
+    id: "arxiv:2104.06756"
+    type: paper
+    location: "https://doi.org/10.37236/10367"
+    relationship: formalizes
+    note: >-
+      Theorem 19 is the advertised statement. The proof development follows
+      the survey’s Wojtas-style argument (Gram congruence, two-class
+      partition, Fischer, and the off-diagonal magnitude bound stated as
+      Theorem 8).
+    license: "CC-BY-ND-4.0"
+    author_endorsement: not-contacted
+  - title: "On Hadamard’s inequality for the determinants of order non-divisible by 4"
+    authors:
+      - "M. Wojtas"
+    type: paper
+    location: "Colloq. Math. 12 (1964), 73–83"
+    relationship: background
+    note: >-
+      Original source of the determinant-theoretic argument formalized here
+      via the Browne–Egan–Hegarty–Ó Catháin write-up.
+    author_endorsement: not-contacted
+  - title: "Determinantenabschätzungen für binäre Matrizen"
+    authors:
+      - "H. Ehlich"
+    id: "doi:10.1007/BF01111162"
+    type: paper
+    location: "Math. Z. 83 (1964), 123–132"
+    relationship: background
+    note: >-
+      Independent 1964 proof of the same bound. This formalization follows
+      Wojtas’s argument rather than Ehlich’s original write-up.
+    author_endorsement: not-contacted
+
+related_formalizations: []
+
+status:
+  scope: >-
+    Only the Ehlich–Wojtas upper bound for {±1}-matrices of order n ≡ 2
+    (mod 4) is advertised and proved. Equality-case structure (Browne et
+    al., Theorem 20), constructions attaining the bound, Hadamard’s bound
+    in other congruence classes, and Ehlich’s n ≡ 3 (mod 4) analysis are
+    out of scope. Intermediate lemmas (Hadamard’s inequality for real
+    positive definite matrices, Fischer’s inequality for a 2×2 PD block
+    matrix, and Wojtas’s off-diagonal magnitude bound) are proved in the
+    library because they are absent from mathlib v4.32.0; they are not
+    advertised Comparator declarations.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+
+automation:
+  methods:
+    - method: agent
+      models: ["Cursor Grok 4.6"]
+      framework: "Cursor Cloud Agent"
+      tool_setup: >-
+        Lean 4.32.0 with mathlib v4.32.0. The proof was written and
+        repaired in an autonomous compile–fix loop (Gram lemmas, Hadamard,
+        Fischer, Wojtas block bound, then the two-class assembly).
+      cost:
+        wall_time: "not tracked"
+        spend_usd: "not tracked"
+        hardware: "Cursor Cloud Agent virtual machine"
+      prompting_notes: >-
+        The agent was asked to formalize only the Ehlich–Wojtas bound for
+        Palomar submission, to follow the published Wojtas/Browne argument,
+        and to avoid re-proving lemmas already in mathlib.
+  spend_usd: "not tracked"
+  notes: >-
+    Human review of the informal statement against Browne et al. Theorem 19
+    was performed by the agent during formalization. No separate referee
+    reviewed the Lean proof.
+
+fidelity:
+  divergences: >-
+    Browne et al. write det(M) ≤ (2n−2)(n−2)^{(n−2)/2}. The formal
+    statement uses M.det.natAbs, i.e. |det M|, which is the intended
+    meaning (determinants of {±1}-matrices may be negative). The
+    exponent n/2 − 1 equals (n−2)/2 because n is even. The single-class
+    case is reduced to the same numerical bound by an explicit Nat
+    inequality rather than quoting the survey’s intermediate
+    (3n−2)(n−2)^{n−1} form as a named lemma. Fischer’s and Hadamard’s
+    inequalities are proved for real positive definite matrices instead of
+    being imported from mathlib.
+
+review:
+  status: self-assessed
+  reviewers: []
+  notes: >-
+    The advertised Challenge statement was checked against Browne et al.
+    Theorem 19. The proof development compiles with `lake build` and
+    contains no `sorry`. No independent human referee review has been
+    performed.
+
+alignment:
+  namespace: EhlichWojtas
+  statements:
+    - source: "Browne–Egan–Hegarty–Ó Catháin, Theorem 19"
+      lean: EhlichWojtas.ehlich_wojtas_bound
+      module: Challenge
+      status: proved
+      note: >-
+        Solution.ehlich_wojtas_bound is the same type, proved by
+        EhlichWojtas.ehlich_wojtas_bound_main.
+
+acknowledgements: >-
+  mathlib; the Palomar submission template; Browne, Egan, Hegarty and
+  Ó Catháin for the English write-up of Wojtas’s argument.
