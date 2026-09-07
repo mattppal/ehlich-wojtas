@@ -1,0 +1,6 @@
+ts	phase	decision	why	evidence	result
+2026-09-07T16:49:01Z	frame	stated done predicate as lake build plus Palomar Challenge/Solution/comparator.json/formalization.yaml plus NOVELTY.md	prove-it-works wants a falsifiable gate not a vibe	Challenge.lean:1	framed
+2026-09-07T16:49:01Z	frame	chose Wojtas via Browne et al Theorem 19 as the proof path	classical writeup is elementary Gram plus Fischer plus the two-class congruence	agent-tools survey extract Theorem 19	chosen
+2026-09-07T16:49:01Z	frame	skipped architect arena	proof shape is already the published argument so a second design bakeoff is extra machinery	principle-laziness-protocol	skipped
+2026-09-07T16:49:01Z	novelty	GitHub code search found no Ehlich or Wojtas Lean formalization	blocked-novelty gate requires a search before proving	GitHub search_code Ehlich Wojtas language:Lean total_count 0	novel
+2026-09-07T16:49:01Z	novelty	web and X-site search found no public Lean or Palomar entry	X MCP needs auth so public web search is the X evidence we have	web search site:x.com Ehlich Wojtas Lean no hits	novel
