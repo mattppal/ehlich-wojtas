@@ -205,7 +205,7 @@ lemma toBlock_symm {n : Type*} [Fintype n] [DecidableEq n]
 lemma card_subtype_ne {n : Type*} [Fintype n] [DecidableEq n] (a : n) :
     Fintype.card { x : n // x ≠ a } = Fintype.card n - 1 := by
   have h1 : Fintype.card { x : n // x = a } = 1 := Fintype.card_unique
-  simpa [h1] using (Fintype.card_subtype_compl (fun x : n => x = a))
+  simp [h1]
 
 lemma posDef_of_pos_det_border {A : Matrix l l ℝ} {B : Matrix l Unit ℝ} {b : ℝ}
     (hA : A.PosDef) (hdet : 0 < (fromBlocks A B Bᵀ (scalar1 b)).det) :

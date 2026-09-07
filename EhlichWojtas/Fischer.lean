@@ -72,7 +72,7 @@ theorem det_le_of_posSemidef_le {S D : Matrix n n ℝ}
       (1 : Matrix n n ℝ) = Q⁻¹ * Q := hQinv.symm
       _ = Q⁻¹ * Q * 1 := (mul_one _).symm
       _ = Q⁻¹ * Q * (Q * Q⁻¹) := by rw [hQinv']
-      _ = Q⁻¹ * (Q * Q) * Q⁻¹ := by simp [mul_assoc]
+      _ = Q⁻¹ * (Q * Q) * Q⁻¹ := by simp
       _ = Q⁻¹ * D * Q⁻¹ := by rw [hQsq]
   have hCle1 : (1 - C).PosSemidef := by
     have hform : 1 - C = Q⁻¹ * (D - S) * Q⁻¹ := by

@@ -1,8 +1,11 @@
 import EhlichWojtas.Block
 import EhlichWojtas.Fischer
 import EhlichWojtas.Gram
-import Mathlib.Algebra.Star.Basic
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.Analysis.Matrix.PosDef
+import Mathlib.Algebra.Order.Ring.Int
 import Mathlib.Data.Int.Cast.Lemmas
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 
 /-!
 Assembly of the Ehlich–Wojtas bound from the two-class Gram partition,
@@ -17,7 +20,7 @@ variable {n : ℕ}
 
 /-- Realification of the integer Gram matrix. -/
 def gramR (M : Matrix (Fin n) (Fin n) ℤ) : Matrix (Fin n) (Fin n) ℝ :=
-  (gram M).map Int.cast
+  (gram M).map (Int.cast : ℤ → ℝ)
 
 lemma gramR_apply (M : Matrix (Fin n) (Fin n) ℤ) (i j : Fin n) :
     gramR M i j = (gram M i j : ℝ) :=
@@ -25,7 +28,7 @@ lemma gramR_apply (M : Matrix (Fin n) (Fin n) ℤ) (i j : Fin n) :
 
 lemma gramR_det (M : Matrix (Fin n) (Fin n) ℤ) :
     (gramR M).det = ((gram M).det : ℝ) := by
-  simpa [gramR, RingHom.mapMatrix] using (Int.castRingHom ℝ).map_det (gram M)
+  simpa [gramR] using ((Int.castRingHom ℝ).map_det (gram M)).symm
 
 lemma gramR_det_sq (M : Matrix (Fin n) (Fin n) ℤ) :
     (gramR M).det = (M.det : ℝ) ^ 2 := by
@@ -37,21 +40,23 @@ lemma gramR_symm (M : Matrix (Fin n) (Fin n) ℤ) : (gramR M)ᵀ = gramR M := by
 
 lemma gramR_posDef {M : Matrix (Fin n) (Fin n) ℤ} (hdet : M.det ≠ 0) :
     (gramR M).PosDef := by
-  have hmul : gramR M = (M.map Int.cast) * (M.map Int.cast)ᵀ := by
+  let MR : Matrix (Fin n) (Fin n) ℝ := M.map (Int.cast : ℤ → ℝ)
+  have hmul : gramR M = MR * MRᵀ := by
     ext i j
-    simp [gramR, gram, Matrix.mul_apply, transpose_apply]
-  have hstar : (M.map Int.cast)ᵀ = (M.map Int.cast)ᴴ := by
+    simp [gramR, gram, MR, Matrix.mul_apply, transpose_apply]
+  have hstar : MRᵀ = MRᴴ := by
     ext i j
-    simp [conjTranspose, transpose]
-  have hU : IsUnit (M.map (Int.cast : ℤ → ℝ)) := by
-    refine (isUnit_iff_isUnit_det _).2 ?_
-    have hmap : ((M.map (Int.cast : ℤ → ℝ)).det) = (M.det : ℝ) := by
-      simpa [RingHom.mapMatrix] using (Int.castRingHom ℝ).map_det M
-    simpa [hmap] using (Int.cast_ne_zero.2 hdet)
-  have hinj : Function.Injective (M.map (Int.cast : ℤ → ℝ)).vecMul :=
-    vecMul_injective_iff_isUnit.2 hU
-  simpa [hmul, hstar] using
-    PosDef.mul_conjTranspose_self (M.map (Int.cast : ℤ → ℝ)) hinj
+    simp [MR, conjTranspose]
+  have hmapdet : MR.det = (M.det : ℝ) := by
+    simpa [MR] using ((Int.castRingHom ℝ).map_det M).symm
+  have hdetR : MR.det ≠ 0 := by
+    rw [hmapdet]
+    exact Int.cast_ne_zero.2 hdet
+  have hU : IsUnit MR :=
+    (isUnit_iff_isUnit_det MR).2 (isUnit_iff_ne_zero.2 hdetR)
+  have hinj : Function.Injective MR.vecMul := vecMul_injective_iff_isUnit.2 hU
+  rw [hmul, hstar]
+  exact PosDef.mul_conjTranspose_self MR hinj
 
 lemma abs_gramR_ge_two {hn : n % 4 = 2}
     {M : Matrix (Fin n) (Fin n) ℤ} {hM : ∀ i j, M i j = 1 ∨ M i j = -1}
@@ -63,32 +68,36 @@ lemma abs_gramR_ge_two {hn : n % 4 = 2}
 
 lemma single_class_nat_le {n : ℕ} (hn : 2 ≤ n) :
     (3 * n - 2) * (n - 2) ^ (n - 1) ≤ (2 * n - 2) ^ 2 * (n - 2) ^ (n - 2) := by
-  have hpow : (n - 2) ^ (n - 1) = (n - 2) * (n - 2) ^ (n - 2) := by
+  have hpow : (n - 2) ^ (n - 1) = (n - 2) ^ (n - 2) * (n - 2) := by
     have : n - 1 = n - 2 + 1 := by omega
     rw [this, pow_succ]
-  rw [hpow, mul_assoc, mul_left_comm (n - 2), ← mul_assoc]
-  gcongr
-  have hL : (3 * n - 2) * (n - 2) = 3 * n * n - 8 * n + 4 := by
-    zify [hn]
-    ring
-  have hR : (2 * n - 2) ^ 2 = 4 * n * n - 8 * n + 4 := by
-    zify [hn]
-    ring
-  rw [hL, hR]
-  omega
+  have hfac : (3 * n - 2) * (n - 2) ≤ (2 * n - 2) ^ 2 := by
+    have h3 : 2 ≤ 3 * n := by omega
+    have h2 : 2 ≤ 2 * n := by omega
+    zify [hn, h3, h2]
+    nlinarith
+  calc
+    (3 * n - 2) * (n - 2) ^ (n - 1)
+        = (3 * n - 2) * ((n - 2) ^ (n - 2) * (n - 2)) := by rw [hpow]
+    _ = (3 * n - 2) * (n - 2) * (n - 2) ^ (n - 2) := by ring
+    _ ≤ (2 * n - 2) ^ 2 * (n - 2) ^ (n - 2) := Nat.mul_le_mul_right _ hfac
 
-lemma two_class_factor_le {n a b : ℕ} (hab : a + b = n) (hn : 2 ≤ n) :
-    (n + 2 * a - 2) * (n + 2 * b - 2) ≤ (2 * n - 2) ^ 2 := by
-  have hb : b = n - a := by omega
-  subst hb
+lemma two_class_factor_le {n a d : ℕ} (had : a + d = n) (hn : 2 ≤ n) :
+    (n + 2 * a - 2) * (n + 2 * d - 2) ≤ (2 * n - 2) ^ 2 := by
   have ha : a ≤ n := by omega
-  zify [hn, ha]
+  have hd : d ≤ n := by omega
+  have hA : 2 ≤ n + 2 * a := by omega
+  have hD : 2 ≤ n + 2 * d := by omega
+  have hN : 2 ≤ 2 * n := by omega
+  refine Int.ofNat_le.mp ?_
+  push_cast [hA, hD, hN]
   set x : ℤ := (2 * a : ℤ) - n
   have hx : (n + 2 * a - 2 : ℤ) = (2 * n - 2 : ℤ) + x := by
     simp [x]
     ring
-  have hy : (n + 2 * (n - a) - 2 : ℤ) = (2 * n - 2 : ℤ) - x := by
-    simp [x]
+  have hy : (n + 2 * d - 2 : ℤ) = (2 * n - 2 : ℤ) - x := by
+    have : (d : ℤ) = n - a := by omega
+    simp [x, this]
     ring
   rw [hx, hy]
   nlinarith [sq_nonneg x]
@@ -98,8 +107,9 @@ lemma ew_bound_sq {n : ℕ} (hn : Even n) (hn2 : 2 ≤ n) :
       (2 * n - 2) ^ 2 * (n - 2) ^ (n - 2) := by
   rw [mul_pow, ← pow_mul]
   congr 1
-  have hdiv : n / 2 * 2 = n := Nat.div_mul_cancel (even_iff_two_dvd.1 hn)
-  have : 2 * (n / 2 - 1) = n - 2 := by omega
+  have : (n / 2 - 1) * 2 = n - 2 := by
+    have hdiv : n / 2 * 2 = n := Nat.div_mul_cancel (even_iff_two_dvd.1 hn)
+    omega
   rw [this]
 
 lemma fromBlocks_toBlock_eq (M : Matrix (Fin n) (Fin n) ℝ) (p : Fin n → Prop)
@@ -125,22 +135,22 @@ theorem ehlich_wojtas_bound_main {n : ℕ} (hn : n % 4 = 2)
     intro i
     simp [gramR, gram_diag M hM, Fintype.card_fin]
   have hb : (0 : ℝ) < 2 := by norm_num
-  have hsq : ((M.det.natAbs : ℝ) ^ 2) = (gramR M).det := by
-    have : ((M.det.natAbs : ℤ) : ℝ) ^ 2 = ((M.det ^ 2 : ℤ) : ℝ) := by
-      norm_cast
-      exact (Int.natAbs_mul_self' M.det).symm.trans (by ring)
-    simpa [gramR_det_sq, sq, Int.natAbs_mul_self'] using this.symm
+  have hsq : (M.det.natAbs : ℝ) ^ 2 = (gramR M).det := by
+    rw [gramR_det_sq, Nat.cast_natAbs, Int.cast_abs, sq_abs]
   have hclose : (gramR M).det ≤ (bound : ℝ) ^ 2 → M.det.natAbs ≤ bound := by
     intro hle
-    have : (M.det.natAbs : ℝ) ^ 2 ≤ (bound : ℝ) ^ 2 := by simpa [hsq] using hle
-    have hx := (sq_le_sq.1 this)
+    have hsqle : (M.det.natAbs : ℝ) ^ 2 ≤ (bound : ℝ) ^ 2 := by
+      rwa [hsq]
+    have habs := sq_le_sq.mp hsqle
     have : (M.det.natAbs : ℝ) ≤ (bound : ℝ) := by
-      simpa [abs_of_nonneg (Nat.cast_nonneg _), abs_of_nonneg (Nat.cast_nonneg bound)] using hx
+      simpa [abs_of_nonneg (show (0 : ℝ) ≤ M.det.natAbs from Nat.cast_nonneg _),
+        abs_of_nonneg (show (0 : ℝ) ≤ bound from Nat.cast_nonneg _)] using habs
     exact_mod_cast this
-  let p : Fin n → Prop := class2 M 0
-  have h0 : p 0 := class2_self hn M hM 0
+  let r : Fin n := ⟨0, by omega⟩
+  let p : Fin n → Prop := class2 M r
+  have h0 : p r := class2_self hn M hM r
   have hAcard : 1 ≤ Fintype.card { i : Fin n // p i } :=
-    Nat.succ_le_of_lt (Fintype.card_pos_iff.2 ⟨⟨0, h0⟩⟩)
+    Nat.succ_le_of_lt (Fintype.card_pos_iff.2 ⟨⟨r, h0⟩⟩)
   refine hclose ?_
   by_cases hBempty : IsEmpty { i : Fin n // ¬p i }
   · have hoff : ∀ i j : Fin n, i ≠ j → (2 : ℝ) ≤ |gramR M i j| := by
@@ -151,26 +161,25 @@ theorem ehlich_wojtas_bound_main {n : ℕ} (hn : n % 4 = 2)
       have hj : p j := by
         by_contra h
         exact (hBempty.elim ⟨j, h⟩)
-      exact abs_gramR_ge_two (hn := hn) (hM := hM) (gram_mem_class2 hn M hM 0 i j hi hj)
+      exact abs_gramR_ge_two (hn := hn) (hM := hM) (gram_mem_class2 hn M hM r i j hi hj)
     have hcard : 1 ≤ Fintype.card (Fin n) := by
-      simpa [Fintype.card_fin] using hn2
+      simpa [Fintype.card_fin] using (le_trans (by norm_num : 1 ≤ 2) hn2)
     have hw := wojtas_bound (gramR M) hPD hdiag hb hoff hcard
-    have hform :
-        (n : ℝ) + Fintype.card (Fin n) * 2 - 2 = ((3 * n - 2 : ℕ) : ℝ) := by
-      simp [Fintype.card_fin]
-      have : (3 * n - 2 : ℕ) = 3 * n - 2 := rfl
-      zify [hn2]
+    have hform : (n : ℝ) + n * 2 - 2 = ((3 * n - 2 : ℕ) : ℝ) := by
+      have h3 : 2 ≤ 3 * n := by omega
+      rw [Nat.cast_sub h3, Nat.cast_mul]
       ring
-    have hnm : (n : ℝ) - 2 = ((n - 2 : ℕ) : ℝ) := by
-      exact_mod_cast (Nat.cast_sub hn2).symm
+    have hnm : (n : ℝ) - 2 = ((n - 2 : ℕ) : ℝ) := (Nat.cast_sub hn2).symm
+    have hw' : (gramR M).det ≤
+        ((n : ℝ) + n * 2 - 2) * ((n : ℝ) - 2) ^ (n - 1) := by
+      simpa [Fintype.card_fin] using hw
     have : (gramR M).det ≤
         ((3 * n - 2 : ℕ) : ℝ) * ((n - 2 : ℕ) : ℝ) ^ (n - 1) := by
-      simp [Fintype.card_fin] at hw
-      simpa [hform, hnm] using hw
-    have hnat := single_class_nat_le hn2
+      simpa [hform, hnm] using hw'
     have hcast : ((3 * n - 2 : ℕ) : ℝ) * ((n - 2 : ℕ) : ℝ) ^ (n - 1) ≤
         ((2 * n - 2 : ℕ) : ℝ) ^ 2 * ((n - 2 : ℕ) : ℝ) ^ (n - 2) := by
-      exact_mod_cast hnat
+      norm_cast
+      exact single_class_nat_le hn2
     have hbound : (bound : ℝ) ^ 2 =
         ((2 * n - 2 : ℕ) : ℝ) ^ 2 * ((n - 2 : ℕ) : ℝ) ^ (n - 2) := by
       have := congrArg (fun k : ℕ => (k : ℝ)) (ew_bound_sq hneven hn2)
@@ -198,14 +207,14 @@ theorem ehlich_wojtas_bound_main {n : ℕ} (hn : n % 4 = 2)
     have hDdiag : ∀ i, D i i = (n : ℝ) := fun i => hdiag _
     have hAoff : ∀ i j, i ≠ j → (2 : ℝ) ≤ |A i j| := by
       intro i j hij
-      have : i.1 ≠ j.1 := mt (congrArg Subtype.val) hij
+      have : i.1 ≠ j.1 := mt Subtype.ext hij
       exact abs_gramR_ge_two (hn := hn) (hM := hM)
-        (gram_mem_class2 hn M hM 0 i.1 j.1 i.2 j.2)
+        (gram_mem_class2 hn M hM r i.1 j.1 i.2 j.2)
     have hDoff : ∀ i j, i ≠ j → (2 : ℝ) ≤ |D i j| := by
       intro i j hij
-      have : i.1 ≠ j.1 := mt (congrArg Subtype.val) hij
+      have : i.1 ≠ j.1 := mt Subtype.ext hij
       exact abs_gramR_ge_two (hn := hn) (hM := hM)
-        (gram_mem_compl hn M hM 0 i.1 j.1 i.2 j.2)
+        (gram_mem_compl hn M hM r i.1 j.1 i.2 j.2)
     have hAb := wojtas_bound A hAPD hAdiag hb hAoff hAcard
     have hDb := wojtas_bound D hDPD hDdiag hb hDoff hDcard
     set a := Fintype.card { i : Fin n // p i }
@@ -215,37 +224,52 @@ theorem ehlich_wojtas_bound_main {n : ℕ} (hn : n % 4 = 2)
         (β := { i : Fin n // ¬p i })
       have hcongr := Fintype.card_congr (Equiv.sumCompl p)
       simpa [a, d, Fintype.card_fin, hsum] using hcongr
-    have hnm : (n : ℝ) - 2 = ((n - 2 : ℕ) : ℝ) := by
-      exact_mod_cast (Nat.cast_sub hn2).symm
-    have hAdet : A.det ≤ ((n + 2 * a - 2 : ℕ) : ℝ) * ((n - 2 : ℕ) : ℝ) ^ (a - 1) := by
-      have : (n : ℝ) + a * 2 - 2 = ((n + 2 * a - 2 : ℕ) : ℝ) := by
-        have ha : 1 ≤ a := hAcard
-        zify [hn2, ha]
-        ring
-      simpa [a, hnm, this, mul_comm (a : ℝ)] using hAb
-    have hDdet : D.det ≤ ((n + 2 * d - 2 : ℕ) : ℝ) * ((n - 2 : ℕ) : ℝ) ^ (d - 1) := by
-      have : (n : ℝ) + d * 2 - 2 = ((n + 2 * d - 2 : ℕ) : ℝ) := by
-        have hd : 1 ≤ d := hDcard
-        zify [hn2, hd]
-        ring
-      simpa [d, hnm, this, mul_comm (d : ℝ)] using hDb
+    have hnm : (n : ℝ) - 2 = ((n - 2 : ℕ) : ℝ) := (Nat.cast_sub hn2).symm
+    have hAdet : A.det ≤ ((n : ℝ) + a * 2 - 2) * ((n : ℝ) - 2) ^ (a - 1) := by
+      simpa [a] using hAb
+    have hDdet : D.det ≤ ((n : ℝ) + d * 2 - 2) * ((n : ℝ) - 2) ^ (d - 1) := by
+      simpa [d] using hDb
     have hGdet : (gramR M).det = (fromBlocks A B Bᵀ D).det := by
       have := det_toBlock (gramR M) p
       simpa [A, B, D, hC] using this
     have hprod : (fromBlocks A B Bᵀ D).det ≤ A.det * D.det := hf
     have hAnn : 0 ≤ A.det := hAPD.posSemidef.det_nonneg
     have hDnn : 0 ≤ D.det := hDPD.posSemidef.det_nonneg
+    have hnm_nonneg : 0 ≤ (n : ℝ) - 2 := by
+      rw [hnm]
+      exact Nat.cast_nonneg _
     have hmul : A.det * D.det ≤
-        ((n + 2 * a - 2 : ℕ) : ℝ) * ((n + 2 * d - 2 : ℕ) : ℝ) *
-          ((n - 2 : ℕ) : ℝ) ^ (a - 1 + (d - 1)) := by
-      have := mul_le_mul hAdet hDdet hDnn (by
-        exact mul_nonneg (Nat.cast_nonneg _) (pow_nonneg (Nat.cast_nonneg _) _))
+        ((n : ℝ) + a * 2 - 2) * ((n : ℝ) + d * 2 - 2) *
+          ((n : ℝ) - 2) ^ (a - 1 + (d - 1)) := by
+      have ha : 1 ≤ a := hAcard
+      have hA : 2 ≤ n + 2 * a := by omega
+      have hAbnd : 0 ≤ ((n : ℝ) + a * 2 - 2) * ((n : ℝ) - 2) ^ (a - 1) := by
+        have : 0 ≤ (n : ℝ) + a * 2 - 2 := by
+          have : (n : ℝ) + a * 2 - 2 = ((n + 2 * a - 2 : ℕ) : ℝ) := by
+            rw [Nat.cast_sub hA, Nat.cast_add, Nat.cast_mul]; ring
+          rw [this]
+          exact Nat.cast_nonneg _
+        exact mul_nonneg this (pow_nonneg hnm_nonneg _)
+      have := mul_le_mul hAdet hDdet hDnn hAbnd
       simpa [mul_mul_mul_comm, pow_add] using this
     have hpow : a - 1 + (d - 1) = n - 2 := by omega
-    have hfac := two_class_factor_le (n := n) (a := a) (b := d) had hn2
+    have hfac := two_class_factor_le (n := n) (a := a) (d := d) had hn2
     have hfacR :
-        ((n + 2 * a - 2 : ℕ) : ℝ) * ((n + 2 * d - 2 : ℕ) : ℝ) ≤
-          ((2 * n - 2 : ℕ) : ℝ) ^ 2 := by exact_mod_cast hfac
+        ((n : ℝ) + a * 2 - 2) * ((n : ℝ) + d * 2 - 2) ≤ ((2 * n - 2 : ℕ) : ℝ) ^ 2 := by
+      have ha : 1 ≤ a := hAcard
+      have hd : 1 ≤ d := hDcard
+      have hA : 2 ≤ n + 2 * a := by omega
+      have hD : 2 ≤ n + 2 * d := by omega
+      have hN : 2 ≤ 2 * n := by omega
+      have hAc : (n : ℝ) + a * 2 - 2 = ((n + 2 * a - 2 : ℕ) : ℝ) := by
+        rw [Nat.cast_sub hA, Nat.cast_add, Nat.cast_mul]
+        ring
+      have hDc : (n : ℝ) + d * 2 - 2 = ((n + 2 * d - 2 : ℕ) : ℝ) := by
+        rw [Nat.cast_sub hD, Nat.cast_add, Nat.cast_mul]
+        ring
+      rw [hAc, hDc]
+      norm_cast
+      try exact hfac
     have hbound : (bound : ℝ) ^ 2 =
         ((2 * n - 2 : ℕ) : ℝ) ^ 2 * ((n - 2 : ℕ) : ℝ) ^ (n - 2) := by
       have := congrArg (fun k : ℕ => (k : ℝ)) (ew_bound_sq hneven hn2)
@@ -255,14 +279,15 @@ theorem ehlich_wojtas_bound_main {n : ℕ} (hn : n % 4 = 2)
       calc
         (gramR M).det = (fromBlocks A B Bᵀ D).det := hGdet
         _ ≤ A.det * D.det := hprod
-        _ ≤ ((n + 2 * a - 2 : ℕ) : ℝ) * ((n + 2 * d - 2 : ℕ) : ℝ) *
-              ((n - 2 : ℕ) : ℝ) ^ (a - 1 + (d - 1)) := hmul
-        _ = ((n + 2 * a - 2 : ℕ) : ℝ) * ((n + 2 * d - 2 : ℕ) : ℝ) *
-              ((n - 2 : ℕ) : ℝ) ^ (n - 2) := by simp [hpow]
-        _ ≤ ((2 * n - 2 : ℕ) : ℝ) ^ 2 * ((n - 2 : ℕ) : ℝ) ^ (n - 2) := by
-          have hnn : 0 ≤ ((n - 2 : ℕ) : ℝ) ^ (n - 2) :=
-            pow_nonneg (Nat.cast_nonneg _) _
+        _ ≤ ((n : ℝ) + a * 2 - 2) * ((n : ℝ) + d * 2 - 2) *
+              ((n : ℝ) - 2) ^ (a - 1 + (d - 1)) := hmul
+        _ = ((n : ℝ) + a * 2 - 2) * ((n : ℝ) + d * 2 - 2) *
+              ((n : ℝ) - 2) ^ (n - 2) := by simp [hpow]
+        _ ≤ ((2 * n - 2 : ℕ) : ℝ) ^ 2 * ((n : ℝ) - 2) ^ (n - 2) := by
+          have hnn : 0 ≤ ((n : ℝ) - 2) ^ (n - 2) := pow_nonneg hnm_nonneg _
           nlinarith [hfacR]
+        _ = ((2 * n - 2 : ℕ) : ℝ) ^ 2 * ((n - 2 : ℕ) : ℝ) ^ (n - 2) := by
+          simp [hnm]
     simpa [hbound] using this
 
 end EhlichWojtas
