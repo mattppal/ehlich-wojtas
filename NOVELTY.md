@@ -20,12 +20,25 @@ here.
 ## What is claimed as new
 
 The intended novelty is the machine-checked Lean 4 proof of this bound,
-with an auditable Palomar Challenge statement. A GitHub code search for
-`Ehlich` / `Wojtas` restricted to Lean, together with a check of mathlib
-v4.32.0, found no existing formalization of the bound. Mathlib does
-define Hadamard matrices (`Matrix.IsHadamard`) and the Hadamard product,
-but not this determinant estimate, not Fischer’s inequality for a
-positive definite block matrix, and not Hadamard’s `det A ≤ ∏ Aᵢᵢ`
+with an auditable Palomar Challenge statement.
+
+Searches on 2026-09-07:
+
+| Query | Result |
+| --- | --- |
+| GitHub code `ehlich_wojtas language:Lean` | 0 files |
+| GitHub code `"Wojtas" language:Lean` | 0 files |
+| GitHub code `"Ehlich" language:Lean` | 1 false positive in `kbuzzard/ClassFieldTheory` (`presumably`) |
+| GitHub code `"maximal determinant" language:Lean` | 0 files |
+| GitHub code `posDef_det_le_prod_diag language:Lean` | 0 files |
+| GitHub repositories `Ehlich Wojtas` | 0 repos |
+| mathlib v4.32.0 `Hadamard` | Hadamard product and `Matrix.IsHadamard` only |
+
+`palomar-registry.org` is blocked from this environment, so the registry itself was not queried.
+
+Mathlib defines Hadamard matrices (`Matrix.IsHadamard`) and the Hadamard product,
+but not this determinant estimate, not Fischer's inequality for a
+positive definite block matrix, and not Hadamard's `det A ≤ ∏ Aᵢᵢ`
 inequality for real positive definite matrices.
 
 Those three intermediate facts are standard. They are proved in this

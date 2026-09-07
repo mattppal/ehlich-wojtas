@@ -16,6 +16,10 @@ python3 scripts/check_bound.py
 echo "== lake build =="
 lake build
 
+echo "== Palomar mechanical metadata =="
+python3 scripts/check_palomar.py
+ruby scripts/validate-formalization.rb formalization.yaml
+
 echo "== advertised statement =="
 test -f Challenge.lean
 test -f Solution.lean

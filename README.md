@@ -23,11 +23,16 @@ Requires [elan](https://github.com/leanprover/elan) and Lean 4.32.0
 ```bash
 lake build
 ./scripts/verify.sh
+./scripts/verify-submit.sh
 ```
 
-`verify.sh` rebuilds the project, checks that the proof development
-contains no `sorry`, and checks a few numerical instances of the bound
-(`n = 2, 6, 10`).
+`verify.sh` rebuilds the project, checks Palomar metadata, checks that
+the proof development contains no `sorry`, and checks the bound at
+`n = 2, 6, 10`.
+
+`verify-submit.sh` also runs the PalomarTemplate Comparator pins
+(`scripts/verify-comparator.sh`). That step needs Go, Cargo, Landrun,
+lean4export, and NanoDa.
 
 ## Proof outline
 
@@ -59,6 +64,8 @@ The argument follows Wojtas as written in Browne, Egan, Hegarty and
 | [`comparator.json`](comparator.json) | Compared declaration |
 | [`formalization.yaml`](formalization.yaml) | Provenance and metadata |
 | [`NOVELTY.md`](NOVELTY.md) | What is and is not claimed as new |
+| [`VERIFICATION.md`](VERIFICATION.md) | Checks that were run |
+| [`SUBMIT.md`](SUBMIT.md) | How to register the result on Palomar |
 | [`LICENSE`](LICENSE) | Apache-2.0 |
 
 ## References
@@ -67,6 +74,7 @@ The argument follows Wojtas as written in Browne, Egan, Hegarty and
   83 (1964), 123–132. DOI: [10.1007/BF01111162](https://doi.org/10.1007/BF01111162)
 * M. Wojtas, On Hadamard’s inequality for the determinants of order
   non-divisible by 4, *Colloq. Math.* 12 (1964), 73–83.
+  DOI: [10.4064/cm-12-1-73-83](https://doi.org/10.4064/cm-12-1-73-83)
 * P. Browne, R. Egan, F. Hegarty, P. Ó Catháin, A Survey of the Hadamard
   Maximal Determinant Problem, *Electron. J. Combin.* 28 (4) (2021),
   #P4.41, Theorem 19. DOI: [10.37236/10367](https://doi.org/10.37236/10367),

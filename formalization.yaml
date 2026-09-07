@@ -45,12 +45,14 @@ sources:
   - title: "On Hadamard’s inequality for the determinants of order non-divisible by 4"
     authors:
       - "M. Wojtas"
+    id: "doi:10.4064/cm-12-1-73-83"
     type: paper
-    location: "Colloq. Math. 12 (1964), 73–83"
+    location: "https://eudml.org/doc/209856"
     relationship: background
     note: >-
       Original source of the determinant-theoretic argument formalized here
-      via the Browne–Egan–Hegarty–Ó Catháin write-up.
+      via the Browne–Egan–Hegarty–Ó Catháin write-up. Colloq. Math. 12
+      (1964), 73–83.
     author_endorsement: not-contacted
   - title: "Determinantenabschätzungen für binäre Matrizen"
     authors:
@@ -79,7 +81,16 @@ status:
     advertised Comparator declarations.
   sorry_count: 0
   sorry_in_definitions: 0
-  axioms: []
+  axioms: ["propext", "Quot.sound", "Classical.choice"]
+  main_results:
+    - declaration: EhlichWojtas.ehlich_wojtas_bound
+      file: Challenge.lean
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+      comparator_config: comparator.json
+      literature_dependencies:
+        - statement: Browne et al. Theorem 19, the Ehlich–Wojtas bound
+          source: A Survey of the Hadamard Maximal Determinant Problem
 
 automation:
   methods:
@@ -100,9 +111,8 @@ automation:
         and to avoid re-proving lemmas already in mathlib.
   spend_usd: "not tracked"
   notes: >-
-    Human review of the informal statement against Browne et al. Theorem 19
-    was performed by the agent during formalization. No separate referee
-    reviewed the Lean proof.
+    The informal statement was checked against Browne et al. Theorem 19
+    during formalization. No separate human referee reviewed the Lean proof.
 
 fidelity:
   divergences: >-
@@ -121,9 +131,9 @@ review:
   reviewers: []
   notes: >-
     The advertised Challenge statement was checked against Browne et al.
-    Theorem 19. The proof development compiles with `lake build` and
-    contains no `sorry`. No independent human referee review has been
-    performed.
+    Theorem 19. The proof development compiles with lake build and contains
+    no sorry. Local Comparator and NanoDa accepted the Solution. No
+    independent human referee reviewed the proof.
 
 alignment:
   namespace: EhlichWojtas

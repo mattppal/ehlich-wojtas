@@ -7,3 +7,8 @@ ts	phase	decision	why	evidence	result
 2026-09-07T17:44:03Z	prove	assembled ehlich_wojtas_bound_main	two-class Fischer plus Wojtas with Nat factor comparison	EhlichWojtas/Bound.lean lake build green	proved
 2026-09-07T17:44:03Z	meta	wrote formalization.yaml NOVELTY.md README	Palomar v0.4 plus honesty about classical result	formalization.yaml NOVELTY.md README.md	written
 2026-09-07T17:44:43Z	verify	lake build and verify.sh both green	done predicate is mechanical	scripts/verify.sh exit 0	verified
+2026-09-07T19:20:44Z	verify	Comparator and NanoDa accepted the Solution	prove it works on the real Comparator artifact	.audit/run-comparator.log Your solution is okay	accepted
+2026-09-07T19:20:44Z	verify	built Comparator pin on Lean 4.32.0	elan could not download v4.33.0-rc1 from releases.lean-lang.org	.audit/build-comparator-432.log	workaround
+2026-09-07T19:20:44Z	yaml	hardened formalization.yaml and added Palomar checkers	mechanical Palomar rules plus official ruby validator	scripts/check_palomar.py scripts/validate-formalization.rb	green
+2026-09-07T19:20:44Z	novelty	re-ran GitHub Lean searches for Ehlich Wojtas	blocked-novelty wants current evidence	NOVELTY.md search table	no prior formalization
+2026-09-07T19:22:16Z	novelty	correct earlier Palomar/X novelty claim	palomar-registry.org was blocked so the registry was not queried	NOVELTY.md VERIFICATION.md	supersedes row 6
